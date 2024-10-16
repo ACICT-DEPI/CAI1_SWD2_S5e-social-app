@@ -50,19 +50,20 @@ app.use(cookieParser());
 app.use(morgan("common"));
 
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
 
-    styleSrc: ["'self'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
-    imgSrc: ["'self'", "data:", "https://example.com", "https://res.cloudinary.com"],
-    connectSrc: ["'self'", "https://api.example.com"],
-    fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    frameSrc: ["'none'"],
-    objectSrc: ["'none'"],
-    upgradeInsecureRequests: [],
-  }
-}));
+// app.use(helmet.contentSecurityPolicy({
+//   directives: {
+//     defaultSrc: ["'self'"],
+
+//     styleSrc: ["'self'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+//     imgSrc: ["'self'", "data:", "https://example.com", "https://res.cloudinary.com"],
+//     connectSrc: ["'self'", "https://api.example.com"],
+//     fontSrc: ["'self'", "https://fonts.gstatic.com"],
+//     frameSrc: ["'none'"],
+//     objectSrc: ["'none'"],
+//     upgradeInsecureRequests: [],
+//   }
+// }));
 
 
 
