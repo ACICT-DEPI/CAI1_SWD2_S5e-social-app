@@ -16,7 +16,7 @@ block content
             tr(class = "hover:bg-gray-100")
               td.px-4.py-2
                 .flex.items-center
-                  img.w-10.h-10.rounded-full(src=`/assets/${user.picturePath}`, alt='User image')
+                  img.w-10.h-10.rounded-full(src=`${user.picturePath}`, alt='User image')
                   .ml-3
                     | #{user.firstName} #{user.lastName}
               td.px-4.py-2.text-gray-600

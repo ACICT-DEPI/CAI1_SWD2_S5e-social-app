@@ -6,17 +6,17 @@ block content
   div(class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6")
     div(class="bg-white shadow-lg hover:bg-blue-100 rounded-lg p-6 transition-transform duration-300 transform hover:scale-105")
       h3.text-lg.font-bold Total Users
-      p.text-2xl #{totalUsers}
+      p.text-2xl#totalUsers #{totalUsers}
       a(href="/admin/users" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-700 transition duration-300") View Users
 
     div(class="bg-white shadow-lg hover:bg-blue-100 rounded-lg p-6 transition-transform duration-300 transform hover:scale-105")
       h3.text-lg.font-bold Total Posts
-      p.text-2xl #{totalPosts}
+      p.text-2xl#totalPosts #{totalPosts}
       a(href="/admin/posts" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-700 transition duration-300") View Posts
 
     div(class="bg-white shadow-lg hover:bg-blue-100 rounded-lg p-6 transition-transform duration-300 transform hover:scale-105")
       h3.text-lg.font-bold Total Comments
-      p.text-2xl #{totalCommentsCount}
+      p.text-2xl#totalCommentsCount #{totalCommentsCount}
 
 
   // Data Analysis Section with Pie Chart
@@ -32,10 +32,8 @@ block content
 
   block scripts
     // Embedding variables as global JavaScript variables
-    script.
-      const totalUsers = !{JSON.stringify(totalUsers)};
-      const totalPosts = !{JSON.stringify(totalPosts)};
-      const totalCommentsCount = !{JSON.stringify(totalCommentsCount)};
-      
+
+    
+    script(src='/js/chart.js')   
     script(src='/js/dashboard.js') 
     script(src='/js/layoutScripts.js') 

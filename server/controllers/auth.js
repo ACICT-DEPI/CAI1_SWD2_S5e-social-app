@@ -10,10 +10,11 @@ const register = async (req, res) => {
       lastName,
       email,
       password,
-      picturePath,
       friends,
     } = req.body;
-    // console.log(req.body);
+    const picturePath = req.file ? req.file.path : null;
+    
+    
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
 
@@ -27,7 +28,9 @@ const register = async (req, res) => {
       viewedProfile: Math.floor(Math.random() * 10000),
       impressions: Math.floor(Math.random() * 10000),
     });
+    
     // console.log(newUser);
+    
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
   } catch (err) {
@@ -48,6 +51,13 @@ const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
     delete user.password;
+    
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+console.log(token)
     res.status(200).json({ token, user });
   } catch (err) {
     res.status(500).json({ error: err.message });

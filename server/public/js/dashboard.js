@@ -1,5 +1,10 @@
 
   const ctx = document.getElementById("userDataChart").getContext("2d");
+  const totalCommentsCount =document.getElementById("totalCommentsCount").textContent;
+  const totalPosts = document.getElementById("totalPosts").textContent;
+  const totalUsers= document.getElementById("totalUsers").textContent;
+  
+
   const userAnalysisChart = new Chart(ctx, {
     type: "bar", // Use "bar" or "doughnut" for a different representation
     data: {

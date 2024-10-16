@@ -292,7 +292,7 @@ const PostWidget = ({
           height="auto"
           alt="post"
           style={{ borderRadius: "0.75rem", marginTop: "0.75rem" }}
-          src={`http://localhost:3001/assets/${picturePath}`}
+          src={`${picturePath}`}
         />
       )}
 
@@ -305,7 +305,7 @@ const PostWidget = ({
           onEnded={(e) => e.target.play()}
         >
           <source
-            src={`http://localhost:3001/assets/${videoPath}`}
+           src={`${videoPath}`}
             type="video/mp4"
           />
           Your browser does not support the video tag.
@@ -322,7 +322,7 @@ const PostWidget = ({
           onEnded={(e) => e.target.play()}
         >
           <source
-            src={`http://localhost:3001/assets/${audioPath}`}
+            src={`${audioPath}`}
             type="audio/mp3"
           />
           Your browser does not support the audio tag.
@@ -426,7 +426,7 @@ const PostWidget = ({
                 >
                   <Box display="flex" alignItems="center" gap="0.5rem">
                     <img
-                      src={`http://localhost:3001/assets/${comment.picturePath}`}
+                      src={`${comment.picturePath}`}
                       alt={`${comment.firstName} ${comment.lastName}`}
                       style={{
                         width: "30px",

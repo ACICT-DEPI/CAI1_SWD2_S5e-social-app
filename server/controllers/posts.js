@@ -4,20 +4,28 @@ const User = require("../models/User");
 /* CREATE */
 const createPost = async (req, res) => {
   try {
-    const { userId, description,picturePath, videoPath,audioPath} = req.body;
+    const { userId, description } = req.body;
     const user = await User.findById(userId);
+
+    // Extract Cloudinary URLs from uploaded files
+    const picturePath = req.files.picture ? req.files.picture[0].path : null;
+    const videoPath = req.files.video ? req.files.video[0].path : null;
+    const audioPath = req.files.audio ? req.files.audio[0].path : null;
+
+
     const newPost = new Post({
       userId,
       firstName: user.firstName,
       lastName: user.lastName,
       description,
       userPicturePath: user.picturePath,
-      picturePath:picturePath,
-      videoPath: videoPath,
-      audioPath: audioPath,
+      picturePath: picturePath, 
+      videoPath: videoPath,   
+      audioPath: audioPath,   
       likes: {},
       comments: [],
     });
+
     await newPost.save();
 
     const post = await Post.find().sort({ createdAt: -1 }); 
