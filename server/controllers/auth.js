@@ -52,11 +52,10 @@ const login = async (req, res) => {
 
     delete user.password;
     
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    });
+    // res.cookie('token', token, {
+    //   httpOnly: true,
+    //   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    // });
 console.log(token)
     res.status(200).json({ token, user });
   } catch (err) {
