@@ -2,6 +2,8 @@ const express = require("express");
 
 const cookieParser = require('cookie-parser');
 
+const bodyParser=require('body-parser'); 
+ 
 const cors = require("cors");
 
 const dotenv = require("dotenv");
@@ -36,6 +38,9 @@ dotenv.config({ path: "./config.env" });
 
 const app = express();
 
+app.use(bodyParser.json({ limit: "30mb", extended: true }));
+app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
+
 app.use(express.json());
 
 app.use(helmet());
@@ -59,7 +64,7 @@ app.use(helmet.contentSecurityPolicy({
   }
 }));
 
-app.use(express.urlencoded({ extended: true }));
+
 
 app.use(cors());
 
