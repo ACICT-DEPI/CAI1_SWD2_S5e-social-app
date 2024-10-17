@@ -168,7 +168,7 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
         Chat with {selectedFriend?.name}
       </Typography>
 
-      <Box
+          <Box
         sx={{
           flexGrow: 1,
           overflowY: "auto", // Only the messages container should scroll
