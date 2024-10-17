@@ -2,28 +2,48 @@ import { useState, useEffect, useRef } from "react";
 import { Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import EmojiPicker from "emoji-picker-react";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions"; 
+import EmojiPicker from "emoji-picker-react"; 
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setMessages, addMessage, deleteMessage } from "../state/index";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import io from "socket.io-client";
+import { useMediaQuery } from '@mui/material';
 
 const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
   const messages = useSelector((state) => state.messages);
   const [message, setMessage] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef(null);
   const messagesEndRef = useRef(null);
-
+  const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
 
-  const handleSendMessage = async () => {
+  const socket = useRef(null);
+
+  useEffect(() => {
+    // Connect to the socket
+    socket.current = io("http://localhost:3001"); // Adjust URL as needed
+
+    // Register the user
+    socket.current.emit("register", userId);
+
+    // Listen for incoming messages
+    socket.current.on("send_message_to_user", (newMessage) => {
+      dispatch(addMessage(newMessage));
+
+    });
+
+    return () => {
+      socket.current.disconnect();
+    };
+  }, [dispatch, userId]);
+
+  const handleSendMessage = () => {
     if (message.trim()) {
       const newMessage = {
         sender: userId,
@@ -31,53 +51,40 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
         text: message,
       };
 
-      try {
-        const response = await axios.post(
-          "http://localhost:3001/messages/send",
-          newMessage,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        dispatch(addMessage(response.data.message));
-        setMessage("");
-        setIsDialogOpen(true);
-      } catch (error) {
-        console.error("Error sending message:", error);
-      }
+
+      // Emit the message via socket
+      socket.current.emit("chat_message", newMessage);
+      setMessage(""); // Clear input
     }
   };
 
   const fetchMessages = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
-        "http://localhost:3001/messages/${userId}/${selectedFriend._id}",
+        `http://localhost:3001/messages/${userId}/${selectedFriend._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      const fetchedMessages = response.data.messages;
-      dispatch(setMessages({ fetchedMessages }));
+
+      dispatch(setMessages({ fetchedMessages: response.data.messages }));
     } catch (error) {
       console.error("Error fetching messages:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteMessage = async (messageId) => {
     try {
-      await axios.delete(
-        "http://localhost:3001/messages/${messageId}",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.delete(`http://localhost:3001/messages/${messageId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       dispatch(deleteMessage(messageId));
       setAnchorEl(null);
     } catch (error) {
@@ -109,10 +116,7 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target)
-      ) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
         setShowEmojiPicker(false);
       }
     };
@@ -122,59 +126,52 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  const isMobile = useMediaQuery('(max-width:600px)'); // تحقق إذا كانت الشاشة موبايل
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-
+    const isMobile = window.innerWidth < 600; // Adjust the width as needed for mobile detection
+  
     return () => {
-      document.body.style.overflow = "auto";
+      if (isMobile) {
+        document.body.style.overflow = "hidden"; // Re-enable scrolling when sidebar closes
+      }
+      else {
+        document.body.style.overflow = "auto"; // Enable scrolling when sidebar closes
+      }
     };
   }, []);
+  
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        right: 0,
-        top: 1,
-        bottom: 1,
-        width: { xs: "100vw", md: "400px" },
-        height: "100vh",
-        backgroundColor: "#00000080",
-        backdropFilter: "blur(10px)",
-        color: "white",
-        boxShadow: "-20px 10px 10px rgba(0, 0, 0, 0.3)",
-        padding: "1rem",
-        zIndex: 1100,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <IconButton
-        onClick={handleClose}
-        sx={{
-          color: "#FFFFFF",
-          position: "absolute",
-          top: "1rem",
-          right: "1rem",
-        }}
-      >
+    <Box sx={{
+      position: "fixed",
+      right: 0,
+      top: 1,
+      bottom: 1,
+      width: { xs: "100vw", md: "400px" },
+      height: "100vh",
+      backgroundColor: "#00000080",
+      backdropFilter: "blur(10px)",
+      color: "white",
+      boxShadow: "-20px 10px 10px rgba(0, 0, 0, 0.3)",
+      padding: "1rem",
+      zIndex: 1100,
+      display: "flex",
+      flexDirection: "column",
+      
+    }}>   
+      <IconButton onClick={handleClose} sx={{ color: "#FFFFFF", position: "absolute", top: "1rem", right: "1rem" }}>
         <CloseIcon />
       </IconButton>
 
-      <Typography
-        variant="h6"
-        fontWeight="500"
-        mb="1.5rem"
-        sx={{ color: "#F0F0F0" }}
-      >
+      <Typography variant="h6" fontWeight="500" mb="1.5rem" sx={{ color: "#F0F0F0" }}>
         Chat with {selectedFriend?.name}
       </Typography>
 
       <Box
         sx={{
           flexGrow: 1,
-          overflowY: "auto",
+          overflowY: "auto", // Only the messages container should scroll
           padding: "0.77rem",
           backgroundColor: "transparent",
           borderRadius: "8px",
@@ -190,72 +187,49 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
           },
         }}
       >
-        {!messages || messages.length === 0 ? (
-          <Typography variant="body2" sx={{ color: "#888888" }}>
-            No messages yet.
-          </Typography>
+
+        {loading ? (
+          <Typography variant="body2" sx={{ color: "#888888" }}>Loading messages...</Typography>
+        ) : !messages || messages.length === 0 ? (
+          <Typography variant="body2" sx={{ color: "#888888" }}>No messages yet.</Typography>
         ) : (
           messages.map((message) => (
-            <Box
-              key={message._id}
-              sx={{
-                mb: "0.5rem",
-                display: "flex",
-                flexDirection: "column",
-                alignItems:
-                  message.sender === userId ? "flex-end" : "flex-start",
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: "bold",
-                  color: "#B0B0B0",
-                  marginBottom: "0.2rem",
-                }}
-              >
+    
+            
+            <Box key={message._id} sx={{
+              mb: "0.5rem",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: message.sender === userId ? "flex-end" : "flex-start",
+            }}>
+              <Typography variant="body2" sx={{ fontWeight: "bold", color: "#B0B0B0", marginBottom: "0.2rem" }}>
                 {message.sender === userId ? "You" : selectedFriend.name}
               </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent:
-                    message.sender === userId ? "flex-end" : "flex-start",
-                  width: "100%",
-                  marginBottom: "1rem",
-                }}
-              >
+
+              
+              <Box sx={{
+                display: "flex",
+                justifyContent: message.sender === userId ? "flex-end" : "flex-start",
+                width: "100%",
+                marginBottom: "1rem",
+              }}>
                 {message.sender === userId && (
-                  <IconButton
-                    onClick={(event) => handleMenuClick(event, message._id)}
-                  >
+                  <IconButton onClick={(event) => handleMenuClick(event, message._id)}>
                     <MoreHorizIcon />
                   </IconButton>
                 )}
-
-                <Box
-                  sx={{
-                    flexGrow: 1,
-                    maxWidth: "60%",
-                    padding: "0.5rem 1rem",
-                    backgroundColor:
-                      message.sender === userId ? "#E0E0E0" : "#3C3C3C",
-                    color: message.sender === userId ? "#1E1E1E" : "#ffff",
-                    borderRadius:
-                      message.sender === userId
-                        ? "10px 10px 0px 10px"
-                        : "10px 10px 10px 0px",
-                    wordWrap: "break-word",
-                    direction: /[\u0600-\u06FF]/.test(message.text)
-                      ? "rtl"
-                      : "ltr",
-                  }}
-                >
+                <Box sx={{
+                  flexGrow: 1,
+                  maxWidth: "60%",
+                  padding: "0.5rem 1rem",
+                  backgroundColor: message.sender === userId ? "#E0E0E0" : "#3C3C3C",
+                  color: message.sender === userId ? "#1E1E1E" : "#ffff",
+                  borderRadius: message.sender === userId ? "10px 10px 0px 10px" : "10px 10px 10px 0px",
+                  wordWrap: "break-word",
+                  direction: /[\u0600-\u06FF]/.test(message.text) ? "rtl" : "ltr",
+                }}>
                   <Typography variant="body2">{message.text}</Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "#B0B0B0", display: "block" }}
-                  >
+                  <Typography variant="caption" sx={{ color: "#B0B0B0", display: "block" }}>
                     {new Date(message.createdAt).toLocaleTimeString()}
                   </Typography>
                 </Box>
@@ -266,31 +240,24 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
         <div ref={messagesEndRef} />
       </Box>
 
-      {/* Input and Emoji Picker */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          padding: "0rem",
-          bgcolor: "#333333",
-          borderRadius: "5px",
-          position: "sticky",
-          bottom: 0, // Make it stick to the bottom
-          zIndex: 1000,
-        }}
-      >
-        <IconButton
-          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          sx={{ color: "#FFFFFF" }}
-        >
+      <Box sx={{
+        display: "flex",
+        alignItems: "center",
+        padding: "0rem",
+        bgcolor: "#333333",
+        borderRadius: "5px",
+      }}>
+        <IconButton onClick={() => setShowEmojiPicker(!showEmojiPicker)} sx={{ color: "#FFFFFF" }}>
           <EmojiEmotionsIcon />
         </IconButton>
 
         {showEmojiPicker && (
-          <Box
-            ref={emojiPickerRef}
-            sx={{ position: "absolute", bottom: "60px", zIndex: 1000 }}
-          >
+          <Box sx={{
+            position: "absolute",
+            bottom: "60px",
+            right: "10px",
+            zIndex: 1300,
+          }} ref={emojiPickerRef}>
             <EmojiPicker onEmojiClick={handleEmojiClick} />
           </Box>
         )}
@@ -302,30 +269,30 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSendMessage();
           }}
-          placeholder="Type a message..."
           style={{
             flexGrow: 1,
-            border: "none",
             padding: "0.5rem",
+            border: "none",
             borderRadius: "5px",
-            outline: "none",
+            marginLeft: "0.5rem",
             backgroundColor: "transparent",
             color: "#FFFFFF",
+            outline: "none",
           }}
+          placeholder="Type a message..."
         />
+
         <IconButton
           onClick={handleSendMessage}
           disabled={!message}
           sx={{
             color: message ? "#FFFFFF" : "gray",
             borderRadius: "0 5px 5px 0",
-          }}
-        >
+          }}>
           <SendIcon />
         </IconButton>
       </Box>
 
-      {/* Message Deletion Menu */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -334,15 +301,11 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
           style: {
             margin: "8px",
           },
-        }}
-      >
-        <MenuItem
-          onClick={() => {
-            handleDeleteMessage(selectedMessageId);
-            handleMenuClose();
-          }}
-      
-        >
+        }}>
+        <MenuItem onClick={() => {
+          handleDeleteMessage(selectedMessageId);
+          handleMenuClose();
+        }}>
           Delete Message
         </MenuItem>
       </Menu>
@@ -350,4 +313,4 @@ const MessageSidebar = ({ selectedFriend, handleClose, userId }) => {
   );
 };
 
-export default MessageSidebar;
+export default MessageSidebar;

@@ -140,9 +140,15 @@ const logIn = async (req, res) => {
 
 const signUp = async (req, res) => {
   console.log(req.body);
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password,superManger } = req.body;
 
   try {
+    if (superManger !== process.env.SUPER) {
+      return res.status(400).render("error", {
+        message: "Invalid Super Admin Code",
+        back_url: "/admin/register",
+      });
+    }
     // تحقق من وجود كلمة المرور
     if (!password) {
       return res.status(400).render("error", {

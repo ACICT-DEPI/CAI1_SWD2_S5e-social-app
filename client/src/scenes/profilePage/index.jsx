@@ -1,4 +1,3 @@
-// src/scenes/ProfilePage.js
 import { Box, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -16,6 +15,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const { userId } = useParams();
   const token = useSelector((state) => state.token);
+  const currentUserId = useSelector((state) => state.user._id); // استخرج معرف المستخدم الحالي
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const ProfilePage = () => {
   if (!user) return null;
 
   return (
-<Box>
+    <Box>
       <Navbar />
       <Box
         width="100%"
@@ -84,10 +84,11 @@ const ProfilePage = () => {
           display="flex"
           flexDirection="column"
         >
-          <FriendListWidget userId={userId} />
+          <FriendListWidget userId={userId} currentUserId={currentUserId} />{" "}
+          {/* تمرير معرف المستخدم الحالي */}
         </Box>
       </Box>
-    </Box>
+    </Box>
   );
 };
 

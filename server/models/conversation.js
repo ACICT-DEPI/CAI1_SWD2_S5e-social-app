@@ -7,13 +7,14 @@ const conversationSchema=new mongoose.Schema({
     }],
     message:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'Message'
-    }],
-    chat:String
-},{
+        ref:'Message',
+        default:[],
 
-timestamps:true
+    }]
+},
 
-})
+{timestamps:true}
+
+);
 
 module.exports=mongoose.model('Conversation',conversationSchema)

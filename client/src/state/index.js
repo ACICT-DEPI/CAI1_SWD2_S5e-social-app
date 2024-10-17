@@ -19,15 +19,11 @@ export const authSlice = createSlice({
       state.messages = action.payload.fetchedMessages; 
     },
     addMessage: (state, action) => {
-      const updatedMessages = state.messages.map((message) => {
-        if (message._id === action.payload._id) return action.payload;
-        return message; 
-      });
-      if (!updatedMessages.some(message => message._id === action.payload._id)) {
-        updatedMessages.push(action.payload);
-      }
-      state.messages = updatedMessages; 
+      const newMessage = action.payload; // Assuming payload contains the complete message object
+      state.messages.push(newMessage);
+
     },
+    
     deleteMessage: (state, action) => {
       state.messages = state.messages.filter(message => message._id !== action.payload); 
     },

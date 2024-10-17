@@ -8,6 +8,8 @@ import {
   Send,
   CheckCircleOutline,
 } from "@mui/icons-material";
+import ChatBubbleIcon from '@mui/icons-material/ChatBubble'; // أيقونة ملونة
+
 import {
   Box,
   Divider,
@@ -194,12 +196,18 @@ const PostWidget = ({
     setSnackbarOpen(false);
   };
   return (
-    <WidgetWrapper m="1rem 0">
-      <Box
+<WidgetWrapper
+  m="1rem 0"
+  sx={{
+    boxShadow: 2,
+    boxShadow: "0px 0px 20px 10px rgba(0, 0, 0, 0.1)", 
+  }}
+>      <Box
         display="flex"
         flexDirection="column"
         alignItems="flex-start"
         position="relative"
+        
       >
         <Friend
           friendId={postUserId}
@@ -285,16 +293,20 @@ const PostWidget = ({
       >
         {description}
       </Typography>
+   {picturePath && !videoPath && (
+  <img
+    alt="post"
+    src={`${picturePath}`}
+    style={{
+      width: "100%", // العرض الأقصى 100%
+      maxHeight: "400px", // ارتفاع أقصى لتفادي الطول الزائد
+      objectFit: "fite", // الحفاظ على نسبة العرض إلى الارتفاع
+      borderRadius: "0.75rem",
+      marginTop: "0.75rem",
+    }}
+  />
+)}
 
-      {picturePath && !videoPath && (
-        <img
-          width="100%"
-          height="auto"
-          alt="post"
-          style={{ borderRadius: "0.75rem", marginTop: "0.75rem" }}
-          src={`${picturePath}`}
-        />
-      )}
 
       {videoPath && (
         <video
@@ -334,24 +346,21 @@ const PostWidget = ({
           <FlexBetween gap="0.3rem">
             <IconButton onClick={patchLike}>
               {isLiked ? (
-                <FavoriteOutlined sx={{ color: "red" }} /> // Change to red when liked
+                <FavoriteOutlined sx={{ color: "red" , fontSize:"25px" }} /> // Change to red when liked
               ) : (
-                <FavoriteBorderOutlined />
+                <FavoriteBorderOutlined sx={{ fontSize:"25px" }} />
               )}
             </IconButton>
-            <Typography>{likeCount}</Typography>
-          </FlexBetween>
+            <Typography>{likeCount > 0 ? likeCount : ''}</Typography>
+            </FlexBetween>
           <FlexBetween gap="0.3rem">
             <IconButton onClick={() => setIsComments((prev) => !prev)}>
-              <ChatBubbleOutlineOutlined />
+              <ChatBubbleIcon sx={{  fontSize:"23px" }} />
             </IconButton>
-            <Typography>{comments.length}</Typography>
-          </FlexBetween>
+            <Typography>{comments.length > 0 ? comments.length : ''}</Typography>
+            </FlexBetween>
         </FlexBetween>
-        <IconButton>
-          <ShareOutlined />
-          {/* وده ال ui بتاعها عدل بقي براحتك عيششش */}
-        </IconButton>
+        
       </FlexBetween>
       {isComments && (
         <Box mt="0.5rem">

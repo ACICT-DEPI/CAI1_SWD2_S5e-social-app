@@ -9,14 +9,14 @@ const AnimatedTypography = styled(Typography)(({ theme }) => ({
   fontSize: "2rem",
   animation: "rainbow 2s linear infinite",
   "@keyframes rainbow": {
-    "0%": { color: "red" },
+    "0%": { color: "white" },
     "14%": { color: "orange" },
-    "28%": { color: "yellow" },
-    "42%": { color: "green" },
-    "57%": { color: "blue" },
-    "71%": { color: "indigo" },
-    "85%": { color: "violet" },
-    "100%": { color: "red" },
+    "28%": { color: "white" },
+    "42%": { color: "orange" },
+    "57%": { color: "orange" },
+    "71%": { color: "white" },
+    "85%": { color: "white" },
+    "100%": { color: "orange" },
   },
 }));
 
@@ -28,7 +28,7 @@ const Loading = () => {
       alignItems="center"
       justifyContent="center"
       height="100vh" // ملء الشاشة بالكامل
-      bgcolor="#000" // لون خلفية هادئ
+       // لون خلفية هادئ
     >
       <AnimatedTypography variant="h6" marginTop={2}>
         TRIBEHUB

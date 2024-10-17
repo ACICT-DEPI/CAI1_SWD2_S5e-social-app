@@ -25,6 +25,8 @@ import { setPosts } from "state";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify"; // Import toast
 import "react-toastify/dist/ReactToastify.css"; // Import Toastify CSS
+import CircularProgress from "@mui/material/CircularProgress";
+
 
 const MyPostWidget = ({ picturePath }) => {
   const dispatch = useDispatch();
@@ -43,48 +45,57 @@ const MyPostWidget = ({ picturePath }) => {
   const medium = palette.neutral.medium;
 
   // Function to handle posting
+  const [loading, setLoading] = useState(false);
+
   const handlePost = async () => {
-    const formData = new FormData();
-    formData.append("userId", _id);
-    formData.append("description", post);
-
-    if (image) {
-      formData.append("picture", image);
-      formData.append("picturePath", image.name);
-    }
-
-    if (video) {
-      formData.append("video", video);
-      formData.append("videoPath", video.name);
-    }
-
-    if (audio) {
-      formData.append("audio", audio);
-      formData.append("audioPath", audio.name);
-    }
-
-    try {
-      const response = await axios.post(
-        "http://localhost:3001/posts",
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      dispatch(setPosts({ posts: response.data }));
-      setImage(null);
-      setVideo(null);
-      setAudio(null); // Reset audio state
-      setPost("");
-
-      // Show success notification
-      toast.success("Created Post successfully!"); // Display success toast
-    } catch (error) {
-      console.error("Error posting:", error);
-      toast.error("Failed to publish post."); // Display error toast
+    if (post.trim()) {
+      setLoading(true); // بدء التحميل
+  
+      const formData = new FormData();
+      formData.append("userId", _id);
+      formData.append("description", post);
+  
+      if (image) {
+        formData.append("picture", image);
+        formData.append("picturePath", image.name);
+      }
+  
+      if (video) {
+        formData.append("video", video);
+        formData.append("videoPath", video.name);
+      }
+  
+      if (audio) {
+        formData.append("audio", audio);
+        formData.append("audioPath", audio.name);
+      }
+  
+      try {
+        const response = await axios.post(
+          "http://localhost:3001/posts",
+          formData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+  
+        dispatch(setPosts({ posts: response.data }));
+        setImage(null);
+        setVideo(null);
+        setAudio(null);
+        setPost("");
+  
+        // عرض إشعار نجاح
+        toast.success("Created Post successfully!"); // Display success toast
+      } catch (error) {
+        console.error("Error posting:", error);
+        toast.error("Failed to publish post."); // Display error toast
+      } finally {
+        setLoading(false); // إيقاف التحميل
+      }
     }
   };
+  
 
   return (
     <WidgetWrapper>
@@ -287,21 +298,22 @@ const MyPostWidget = ({ picturePath }) => {
         </FlexBetween>
 
         <Button
-          disabled={!post}
-          onClick={handlePost}
-          sx={{
-            color: "orange",
-            backgroundColor: "#1122",
-            borderRadius: "0.8rem",
-            padding: "0.5rem 1.5rem",
-            transition: "background-color 0.3s ease, transform 0.2s ease",
-            "&:hover": {
-              backgroundColor: "#2212",
-            },
-          }}
-        >
-          POST
-        </Button>
+  disabled={loading || !post} // تعطيل الزر أثناء التحميل أو إذا كان المحتوى فارغًا
+  onClick={handlePost}
+  sx={{
+    color: "orange",
+    backgroundColor: "#1122",
+    borderRadius: "0.8rem",
+    padding: "0.5rem 1.5rem",
+    transition: "background-color 0.3s ease, transform 0.2s ease",
+    "&:hover": {
+      backgroundColor: "#2212",
+    },
+  }}
+>
+  {loading ? <CircularProgress size={24} sx={{ color: "orange" }} /> : "POST"}
+</Button>
+
       </FlexBetween>
     </WidgetWrapper>
   );
